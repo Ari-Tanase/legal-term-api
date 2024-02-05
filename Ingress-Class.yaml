@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: istio
+spec:
+  controller: istio.io/ingress-controller
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+spec:
+  ingressClassName: istio
+  rules:
+  - host: httpbin.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: httpbin
+            port:
+              number: 8000
+
+#  kubectl apply -f (name of th manifest)      
+
+#      Specifying IngressClass
+# In Kubernetes 1.18, a new resource, IngressClass, was added,
+# replacing the kubernetes.io/ingress.class annotation on the Ingress resource. 
+# If you are using this resource, you will need to set the controller field to istio.io/ingress-controller.   
+
+#      Cleanup
+# Delete the Ingress configuration, and shutdown the httpbin service:
+# $ kubectl delete ingress ingress
+# $ kubectl delete --ignore-not-found=true -f samples/httpbin/httpbin.yaml

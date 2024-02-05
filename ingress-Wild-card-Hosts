@@ -1,0 +1,49 @@
+#       Accessing ingress services using a browser:
+# Entering the httpbin service URL in a browser won’t work because you can’t pass the Host header to a browser like you did with curl. 
+# In a real world situation, this is not a problem because you configure the requested host properly and DNS resolvable. 
+# Thus, you use the host’s domain name in the URL, for example, https://httpbin.example.com/status/200.   
+
+# You can work around this problem for simple tests and demos as follows:
+
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: httpbin-gateway
+spec:
+  # The selector matches the ingress gateway pod labels.
+  # If you installed Istio using Helm following the standard documentation, this would be "istio=ingress"
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: httpbin
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - httpbin-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /headers
+    route:
+    - destination:
+        port:
+          number: 8000
+        host: httpbin
+        
+
+# You can then use $INGRESS_HOST:$INGRESS_PORT in the browser URL. 
+# For example, http://$INGRESS_HOST:$INGRESS_PORT/headers will display all the headers that your browser sends.
+
+
+      
